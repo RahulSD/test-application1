@@ -1,0 +1,33 @@
+FROM ubuntu
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN rm /bin/sh && ln -s /bin/bash /bin/sh
+RUN apt-get update && apt-get install -y curl git
+
+RUN mkdir -p /usr/local/nvm
+ENV NVM_DIR /usr/local/nvm
+ENV NODE_VERSION 16.10.0
+
+RUN curl --silent -o- https://raw.githubusercontent.com/creationix/nvm/master/install.sh | bash
+
+RUN source $NVM_DIR/nvm.sh \
+    && nvm install $NODE_VERSION \
+    && nvm alias default $NODE_VERSION \
+    && nvm use default
+
+# add node and npm to path so the commands are available
+ENV NODE_PATH $NVM_DIR/v$NODE_VERSION/lib/node_modules
+ENV PATH $NVM_DIR/versions/node/v$NODE_VERSION/bin:$PATH
+
+#RUN source ~/.profile
+WORKDIR '/app'
+RUN git clone https://github.com/RahulSD/test-application1.git .
+
+# confirm installation
+RUN node -v
+RUN npm -v
+
+RUN npm install
+RUN npm install @angular/cli -g
+CMD ["ng", "serve","--host", "0.0.0.0"]
